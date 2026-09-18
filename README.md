@@ -165,6 +165,18 @@ DYU 게임서버프로그래밍 학기작 서버
 		<td>회원가입</td>
 	</tr>
 	<tr>
+		<td>C2S_CheckNicknameReq</td>
+		<td>string Nickname</td>
+		<td>플레이어의 닉네임을 정해 서버에게 해당 닉네임이 가능한지 확인 요청</td>
+		<td>닉네임</td>
+	</tr>
+	<tr>
+		<td>C2S_ConfirmNicknameReq</td>
+		<td>string Nickname</td>
+		<td>서버에게 해당 닉네임을 사용하겠다는 요청</td>
+		<td>닉네임</td>
+	</tr>
+	<tr>
 		<td>C2S_MatchMakingReq</td>
 		<td>-</td>
 		<td>서버에게 게임 매칭 시작을 요청</td>
@@ -212,6 +224,20 @@ DYU 게임서버프로그래밍 학기작 서버
 		ResisterResponse Type(Enum)</td>
 		<td>클라이언트에게 받은 정보를 토대로 회원가입 결과를 전송</td>
 		<td>회원가입</td>
+	</tr>
+	<tr>
+		<td>S2C_CheckNicknameRes</td>
+		<td>bool Result<br>
+		NicknameResponse Type(Enum)</td>
+		<td>클라이언트에게 받은 닉네임이 사용가능한지 확인하여 결과를 전송</td>
+		<td>닉네임</td>
+	</tr>
+	<tr>
+		<td>S2C_ConfirmNicknameRes</td>
+		<td>bool Result<br>
+		NicknameResponse Type(Enum)</td>
+		<td>클라이언트에게 받은 닉네임이 적용가능한지 확인하여 결과를 전송</td>
+		<td>닉네임</td>
 	</tr>
 	<tr>
 		<td>S2C_MatchMakingRes</td>
