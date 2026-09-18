@@ -116,6 +116,36 @@ DYU 게임서버프로그래밍 학기작 서버
 	</tr>
 </table>
 
+## 서버 패킷 종류
+
+### 클라이언트 → 서버
+
+- C2S_LoginReq : 클라이언트가 로그인 정보 입력 후 해당 로그인 정보를 토대로 서버에 로그인 요청
+- C2S_ResisterReq : 클라이언트가 회원가입 정보를 입력 후 서버에게 회원가입 요청
+- C2S_MatchMakingReq : 서버에게 게임 매칭 시작을 요청
+- C2S_DropInReq : 서버에게 게임 난입을 요청
+- C2S_MoveReq : 서버에게 조작을 요청
+- C2S_TotalHistoryReq : 서버에게 모든 전적을 요청
+
+### 서버 → 클라이언트
+
+- S2C_LoginRes : 서버가 클라이언트에게 받은 로그인 정보를 토대로 로그인이 되었는지 결과를 전송
+- S2C_ResisterRes : 클라이언트에게 받은 정보를 토대로 회원가입 결과를 전송
+- S2C_MatchMakingRes : 클라이언트에게 매칭 요청에 대한 결과를 전송
+- S2C_MatchRes : 클라이언트에게 매칭 결과를 전송
+- S2C_DropInRes : 클라이언트에게 난입 결과를 전송
+- S2C_GameStartNoti : 클라이언트들에게 게임 시작을 통지
+- S2C_GameEndNoti : 클라이언트들에게 게임 종료를 통지
+- S2C_MoveRes : 클라이언트에게 조작 결과를 전송
+- S2C_MoveNoti : 클라이언트들에게 특정 캐릭터의 조작을 통지
+- S2C_SetItemNoti : 클라이언트들에게 특정 위치에 아이템이 생성됨을 통지
+- S2C_GetItemNoti : 클라이언트들에게 특정 유저가 특정 위치의 아이템을 먹었음을 통지
+- S2C_KillPlayerNoti : 클라이언트들에게 특정 유저가 다른 유저를 죽였다는 것을 통지
+- S2C_RespawnPlayerNoti : 클라이언트들에게 특정 유저가 리스폰 했다는 것을 통지
+- S2C_ScoreUpdateNoti : 클라이언트들에게 특정 유저의 점수에 변동이 있음을 통지
+- S2C_TotalHistoryRes : 클라이언트에게 모든 전적 전송에 대한 결과를 전송
+- S2C_HistoryNoti : 클라이언트에게 해당 게임에 대한 전적을 통지
+
 ## 작업 우선 순위
 
 ### 1순위
