@@ -132,7 +132,7 @@ DYU 게임서버프로그래밍 학기작 서버
 - S2C_LoginRes : 서버가 클라이언트에게 받은 로그인 정보를 토대로 로그인이 되었는지 결과를 전송
 - S2C_ResisterRes : 클라이언트에게 받은 정보를 토대로 회원가입 결과를 전송
 - S2C_MatchMakingRes : 클라이언트에게 매칭 요청에 대한 결과를 전송
-- S2C_MatchRes : 클라이언트에게 매칭 결과를 전송
+- S2C_MatchNoti : 클라이언트에게 매칭 결과를 통보
 - S2C_DropInRes : 클라이언트에게 난입 결과를 전송
 - S2C_GameStartNoti : 클라이언트들에게 게임 시작을 통지
 - S2C_GameEndNoti : 클라이언트들에게 게임 종료를 통지
