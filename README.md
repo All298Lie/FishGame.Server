@@ -294,7 +294,7 @@ DYU 게임서버프로그래밍 학기작 서버
 	</tr>
 	<tr>
 		<td>S2C_TotalHistoryRes</td>
-		<td>List\<GameHistory\> Histories(struct)</td>
+		<td>List&lt;GameHistory&gt; Histories(struct)</td>
 		<td>클라이언트에게 모든 전적 전송에 대한 결과를 전송</td>
 		<td>전적</td>
 	</tr>
