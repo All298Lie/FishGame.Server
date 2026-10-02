@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BattleArenaServer
 {
@@ -33,8 +34,6 @@ namespace BattleArenaServer
     {
         public static GameServer Instance { get; private set; } = null!;
 
-        private const int PORT = 7777;
-
         private Socket? _listenSocket;
         private int _nextPlayerId = 0;
 
@@ -48,7 +47,7 @@ namespace BattleArenaServer
         // ═══════════════════════════════════════
         // 서버 시작
         // ═══════════════════════════════════════
-        public void Start()
+        public async Task Start(int port)
         {
             PrintBanner();
 
@@ -59,13 +58,13 @@ namespace BattleArenaServer
                 ProtocolType.Tcp);
 
             // 2. Bind
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, PORT);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
             _listenSocket.Bind(endPoint);
 
             // 3. Listen
-            _listenSocket.Listen(100);
+            _listenSocket.Listen(5000);
 
-            Console.WriteLine($"[서버] 포트 {PORT}번에서 접속을 기다립니다...");
+            Console.WriteLine($"[서버] 포트 {port}번에서 접속을 기다립니다...");
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("※ 이 서버는 동기 버전입니다.");
@@ -78,7 +77,7 @@ namespace BattleArenaServer
             while (true)
             {
                 // ★ 동기 Accept — 접속이 올 때까지 멈춤
-                Socket clientSocket = _listenSocket.Accept();
+                Socket clientSocket = await _listenSocket.AcceptAsync();
 
                 int playerId = Interlocked.Increment(ref _nextPlayerId);
 
@@ -94,7 +93,7 @@ namespace BattleArenaServer
                 //
                 // 결과: 두 번째 손님은 영원히 대기
                 //
-                session.Run();
+                _ = session.RunAsync();
 
                 // ↑ 이 줄이 끝나야 아래로 내려옵니다
                 Console.WriteLine($"[세션 종료] ID:{playerId}");
@@ -137,13 +136,13 @@ namespace BattleArenaServer
         }
 
         // ═══════════════════════════════════════
-        public static void Main()
+        public static async Task Main()
         {
-            GameServer server = new GameServer();
+            GameServer main = new GameServer();
 
             try
             {
-                server.Start();
+                await main.Start(7777);
             }
             catch (Exception ex)
             {

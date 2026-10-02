@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace BattleArenaServer
@@ -66,6 +67,41 @@ namespace BattleArenaServer
         }
 
         // ═══════════════════════════════════════
+        // 수신 루프 (동기)
+        // ═══════════════════════════════════════
+        public async Task RunAsync()
+        {
+            Console.WriteLine($"[접속] ID:{PlayerId}  {_socket.RemoteEndPoint}");
+
+            try
+            {
+                while (_isConnected)
+                {
+                    // ★ 여기서 쓰레드가 멈춥니다
+                    //   클라이언트가 뭔가 보낼 때까지 영원히 대기
+                    string? json = await PacketHelper.ReceiveAsync(_socket);
+
+                    if (json == null) break;
+
+                    Console.WriteLine($"[수신] ID:{PlayerId}  {json}");
+                    HandlePacket(json);
+                }
+            }
+            catch(SocketException ex)
+            {
+                Console.WriteLine($"[에러] ID:{PlayerId} {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[에러] ID:{PlayerId} {ex} {ex.Message}");
+            }
+            finally
+            {
+                Disconnect();
+            }
+        }
+
+        // ═══════════════════════════════════════
         // 패킷 처리
         // ═══════════════════════════════════════
         private void HandlePacket(string json)
@@ -78,7 +114,7 @@ namespace BattleArenaServer
             switch (type)
             {
                 case PacketType.LOGIN:
-                    HandleLogin(json);
+                    _ = HandleLogin(json);
                     break;
 
                 default:
@@ -87,7 +123,7 @@ namespace BattleArenaServer
             }
         }
 
-        private void HandleLogin(string json)
+        private async Task HandleLogin(string json)
         {
             LoginPacket? login = JsonConvert.DeserializeObject<LoginPacket>(json);
             if (login == null) return;
@@ -98,7 +134,7 @@ namespace BattleArenaServer
 
             Console.WriteLine($"[로그인] {Nickname} (ID:{PlayerId})");
 
-            Send(new WelcomePacket
+            await SendAsync(new WelcomePacket
             {
                 PlayerId = PlayerId,
                 Message  = $"{Nickname}님, 배틀아레나에 오신 것을 환영합니다!"
@@ -121,6 +157,23 @@ namespace BattleArenaServer
             try
             {
                 PacketHelper.Send(_socket, packet);
+            }
+            catch
+            {
+                Disconnect();
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // 전송 (비동기)
+        // ═══════════════════════════════════════
+        public async Task SendAsync(object packet)
+        {
+            if (!_isConnected) return;
+
+            try
+            {
+                await PacketHelper.SendAsync(_socket, packet);
             }
             catch
             {

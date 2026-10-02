@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
@@ -165,9 +165,17 @@ namespace TestClient
 
             if (keep?.ToLower() != "y")
             {
-                foreach (var c in clients)
+                Console.WriteLine("\n서버 부하 방지를 위해 순차적으로 연결을 종료합니다...");
+
+                for (int i = 0; i < clients.Count; i++)
                 {
-                    try { c.Close(); } catch { }
+                    try { clients[i].Close(); } catch { }
+
+                    // 10명 퇴장할 때마다 10ms씩 대기 (숫자는 상황에 맞게 조절)
+                    if (i > 0 && i % 10 == 0)
+                    {
+                        await Task.Delay(10);
+                    }
                 }
                 Console.WriteLine("모두 연결을 끊었습니다.");
             }

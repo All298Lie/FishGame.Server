@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace BattleArenaServer
@@ -46,6 +47,28 @@ namespace BattleArenaServer
         }
 
         // ═══════════════════════════════════════
+        // 보내기 (비동기)
+        // ═══════════════════════════════════════
+
+        public async static Task SendAsync(Socket socket, object packet)
+        {
+            string json = JsonConvert.SerializeObject(packet);
+            await SendAsync(socket, json);
+        }
+
+        public async static Task SendAsync(Socket socket, string json)
+        {
+            byte[] body = Encoding.UTF8.GetBytes(json);
+            byte[] header = BitConverter.GetBytes(body.Length);
+
+            byte[] packet = new byte[header.Length + body.Length];
+            Array.Copy(header, 0, packet, 0, header.Length);
+            Array.Copy(body, 0, packet, header.Length, body.Length);
+
+            await socket.SendAsync(packet);
+        }
+
+        // ═══════════════════════════════════════
         // 받기 (동기)
         // ═══════════════════════════════════════
 
@@ -87,6 +110,55 @@ namespace BattleArenaServer
                 // ★ 동기 수신 — 데이터가 올 때까지 여기서 멈춤
                 int n = socket.Receive(
                     buffer, received, count - received, SocketFlags.None);
+
+                if (n == 0) return null;
+                received += n;
+            }
+
+            return buffer;
+        }
+
+        // ═══════════════════════════════════════
+        // 받기 (비동기)
+        // ═══════════════════════════════════════
+
+        public async static Task<string?> ReceiveAsync(Socket socket)
+        {
+            // 1. 길이 헤더 4바이트
+            byte[]? headerBytes = await ReceiveExactAsync(socket, 4);
+            if (headerBytes == null) return null;
+
+            int bodyLength = BitConverter.ToInt32(headerBytes, 0);
+
+            if (bodyLength <= 0 || bodyLength > 65535)
+            {
+                Console.WriteLine($"[경고] 비정상 패킷 길이: {bodyLength}");
+                return null;
+            }
+
+            // 2. 본문
+            byte[]? bodyBytes = await ReceiveExactAsync(socket, bodyLength);
+            if (bodyBytes == null) return null;
+
+            return Encoding.UTF8.GetString(bodyBytes);
+        }
+
+        /// <summary>
+        /// 정확히 count 바이트를 읽을 때까지 반복 (동기)
+        ///
+        /// ★ 여기가 문제의 핵심입니다.
+        ///   데이터가 안 오면 이 줄에서 쓰레드가 영원히 멈춥니다.
+        ///   그동안 그 쓰레드는 아무 일도 못 합니다.
+        /// </summary>
+        private async static Task<byte[]?> ReceiveExactAsync(Socket socket, int count)
+        {
+            byte[] buffer = new byte[count];
+            int received = 0;
+
+            while (received < count)
+            {
+                ArraySegment<byte> seg = new ArraySegment<byte>(buffer, received, count - received);
+                int n = await socket.ReceiveAsync(seg, SocketFlags.None);
 
                 if (n == 0) return null;
                 received += n;
