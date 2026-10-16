@@ -117,7 +117,7 @@ namespace BattleArenaServer
             foreach (var pair in _sessions)
             {
                 if (pair.Key == exceptPlayerId) continue;
-                pair.Value.Send(packet);
+                _ = pair.Value.SendAsync(packet);
             }
         }
 
