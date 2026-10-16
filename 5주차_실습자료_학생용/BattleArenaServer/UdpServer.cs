@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -59,9 +59,8 @@ namespace BattleArenaServer
             //     UDP는 '연결'이라는 개념이 없기 때문입니다
             // ─────────────────────────────────────────
 
-            _socket = null!;   // ← 이 줄을 지우고 직접 만드세요
-
-
+            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            _socket.Bind(new IPEndPoint(IPAddress.Any, UDP_PORT));
 
             Console.WriteLine($"[UDP] 포트 {UDP_PORT}번에서 위치 패킷을 기다립니다");
             Console.WriteLine();
@@ -101,10 +100,11 @@ namespace BattleArenaServer
                     //     result.RemoteEndPoint   보낸 사람 주소
                     // ─────────────────────────────────────────
 
-                    await Task.Delay(100);   // ← 이 줄을 지우고 직접 구현하세요
+                    SocketReceiveFromResult result = await _socket.ReceiveFromAsync(buffer, from);
 
+                    string packet = Encoding.UTF8.GetString(buffer, 0, result.ReceivedBytes);
 
-
+                    HandlePacket(packet, result.RemoteEndPoint);
                 }
                 catch (Exception ex)
                 {
@@ -160,9 +160,7 @@ namespace BattleArenaServer
             //   · 예제 C 6번 메뉴에서 이 동작을 볼 수 있습니다
             // ─────────────────────────────────────────
 
-            // ← 여기에 한 줄 추가하세요
-
-
+            if (seq <= session.LastSeq) return;
 
             // 위치 갱신 (이 부분은 완성되어 있습니다)
             session.LastSeq = seq;
@@ -177,47 +175,74 @@ namespace BattleArenaServer
         {
             while (true)
             {
-                await Task.Delay(TICK_MS);
+                try
+                {
+                    await Task.Delay(TICK_MS);
 
-                var sessions = GameServer.Instance.GetSessions();
-                if (sessions.Count == 0) continue;
+                    var sessions = GameServer.Instance.GetSessions();
+                    if (sessions.Count == 0) continue;
 
-                // ─────────────────────────────────────────
-                // TODO 4 — 전체 위치를 모아서 모두에게 보내세요   ★★★
-                //
-                //   만들 패킷 형식
-                //     STATE|id,닉네임,x,y|id,닉네임,x,y|...
-                //
-                //   예시
-                //     STATE|1,홍길동,10,7|3,철수,22,4
-                //
-                //   순서
-                //     1) StringBuilder 로 STATE 문자열을 조립
-                //        - foreach 로 sessions 를 돌면서
-                //        - s.UdpEndPoint 가 null 인 사람은 건너뛰기
-                //          (아직 UDP 패킷을 한 번도 안 보낸 사람)
-                //        - $"|{s.PlayerId},{s.Nickname},{s.X},{s.Y}" 를 붙이기
-                //
-                //     2) 보낼 사람이 없으면 continue
-                //        (조립 결과가 "STATE" 그대로면 아무도 없는 것)
-                //
-                //     3) 문자열을 byte[] 로 변환
-                //
-                //     4) foreach 로 모두에게 SendToAsync
-                //        - UdpEndPoint 가 null 인 사람은 건너뛰기
-                //        - try-catch 로 감싸기 (UDP는 실패해도 그냥 넘어감)
-                //
-                //   왜 한 패킷에 다 담나
-                //     사람마다 따로 보내면 패킷 수가 제곱으로 늘어납니다
-                //     100명이면 9,900개 vs 100개
-                //
-                //   참고
-                //     PositionSync 의 BroadcastLoopAsync 가 거의 같습니다
-                // ─────────────────────────────────────────
+                    // ─────────────────────────────────────────
+                    // TODO 4 — 전체 위치를 모아서 모두에게 보내세요   ★★★
+                    //
+                    //   만들 패킷 형식
+                    //     STATE|id,닉네임,x,y|id,닉네임,x,y|...
+                    //
+                    //   예시
+                    //     STATE|1,홍길동,10,7|3,철수,22,4
+                    //
+                    //   순서
+                    //     1) StringBuilder 로 STATE 문자열을 조립
+                    //        - foreach 로 sessions 를 돌면서
+                    //        - s.UdpEndPoint 가 null 인 사람은 건너뛰기
+                    //          (아직 UDP 패킷을 한 번도 안 보낸 사람)
+                    //        - $"|{s.PlayerId},{s.Nickname},{s.X},{s.Y}" 를 붙이기
+                    //
+                    //     2) 보낼 사람이 없으면 continue
+                    //        (조립 결과가 "STATE" 그대로면 아무도 없는 것)
+                    //
+                    //     3) 문자열을 byte[] 로 변환
+                    //
+                    //     4) foreach 로 모두에게 SendToAsync
+                    //        - UdpEndPoint 가 null 인 사람은 건너뛰기
+                    //        - try-catch 로 감싸기 (UDP는 실패해도 그냥 넘어감)
+                    //
+                    //   왜 한 패킷에 다 담나
+                    //     사람마다 따로 보내면 패킷 수가 제곱으로 늘어납니다
+                    //     100명이면 9,900개 vs 100개
+                    //
+                    //   참고
+                    //     PositionSync 의 BroadcastLoopAsync 가 거의 같습니다
+                    // ─────────────────────────────────────────
 
+                    StringBuilder sb = new StringBuilder(UdpPacket.STATE);
+                    foreach (var session in sessions)
+                    {
+                        try
+                        {
+                            if (session.UdpEndPoint == null) continue;
 
+                            sb.Append($"|{session.PlayerId},{session.Nickname},{session.X},{session.Y}");
+                        }
+                        catch { }
+                    }
 
+                    if (sb.Equals(UdpPacket.STATE) == true) continue;
 
+                    byte[] buffer = Encoding.UTF8.GetBytes(sb.ToString());
+
+                    foreach (var session in sessions)
+                    {
+                        try
+                        {
+                            if (session.UdpEndPoint == null) continue;
+
+                            _ = _socket.SendToAsync(buffer, session.UdpEndPoint);
+                        }
+                        catch { }
+                    }
+                }
+                catch { }
             }
         }
     }

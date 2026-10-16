@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
@@ -94,10 +94,10 @@ namespace BattleArena
                 //     UDP는 Connect라는 개념이 없습니다
                 // ─────────────────────────────────────────
 
-                _socket = null;            // ← 이 두 줄을 지우고
-                _serverEndPoint = null;    //    직접 만드세요
+                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                _socket.Bind(new IPEndPoint(IPAddress.Any, 0));
 
-
+                _serverEndPoint = new IPEndPoint(IPAddress.Parse(SERVER_IP), SERVER_PORT);
 
                 _isRunning = true;
                 _ = ReceiveLoopAsync();
@@ -145,11 +145,11 @@ namespace BattleArena
                 //     서버가 "이게 최신인지" 판단하는 데 씁니다
                 //     (서버 TODO 3과 짝입니다)
                 // ─────────────────────────────────────────
+                string packet = $"MOVE|{_playerId}|{_seq}|{x}|{y}";
 
+                byte[] buffer = Encoding.UTF8.GetBytes(packet);
 
-
-
-                await Task.CompletedTask;   // ← 구현했으면 이 줄은 지우세요
+                await _socket.SendToAsync(buffer, SocketFlags.None, _serverEndPoint);
             }
             catch
             {
@@ -222,10 +222,15 @@ namespace BattleArena
             //     return true;
             // ─────────────────────────────────────────
 
-            return false;   // ← 이 줄을 지우고 직접 구현하세요
+            string latest = null;
+            while (_stateQueue.TryDequeue(out string msg) == true) latest = msg;
 
+            if (latest == null) return false;
+            if (latest.StartsWith("STATE") == false) return false;
 
+            players = Parse(latest);
 
+            return true;
         }
 
         /// <summary>STATE|id,닉네임,x,y|... 파싱 (완성되어 있습니다)</summary>
