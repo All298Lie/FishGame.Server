@@ -157,6 +157,12 @@ namespace BattleArena
             }
             catch { }
 
+            GameServer.Instance.Broadcast(new NoticePacket
+            {
+                Type = PacketType.PLAYER_OUT,
+                Message = $"{Nickname}님이 퇴장했습니다."
+            }, exceptPlayerId: PlayerId);
+
             GameServer.Instance.RemoveSession(PlayerId);
         }
     }
