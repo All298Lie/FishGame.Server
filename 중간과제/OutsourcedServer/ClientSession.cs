@@ -47,7 +47,7 @@ namespace BattleArena
                     string? json = await PacketHelper.ReceiveAsync(_socket);
                     if (json == null) break;
 
-                    HandlePacket(json);
+                    await HandlePacketAsync(json);
                 }
             }
             catch (Exception ex)
@@ -65,23 +65,12 @@ namespace BattleArena
         //
         // 수신 루프를 막지 않기 위해 비동기로 처리합니다.
         // ═══════════════════════════════════════
-        private async void HandlePacket(string json)
+        private async Task HandlePacketAsync(string json)
         {
-            dynamic? packet = null;
-
-            try
-            {
-                packet = JsonConvert.DeserializeObject(json);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[경고] 잘못된 패킷 : {json}");
-                Console.WriteLine(ex.StackTrace);
-            }
+            dynamic? packet = JsonConvert.DeserializeObject(json);
 
             if (packet == null) return;
-
-            int type = (int)packet.Type;
+            if (int.TryParse(packet.Type?.ToString(), out int type) == false) return;
 
             switch (type)
             {
