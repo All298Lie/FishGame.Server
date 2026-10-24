@@ -67,7 +67,18 @@ namespace BattleArena
         // ═══════════════════════════════════════
         private async void HandlePacket(string json)
         {
-            dynamic? packet = JsonConvert.DeserializeObject(json);
+            dynamic? packet = null;
+
+            try
+            {
+                packet = JsonConvert.DeserializeObject(json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[경고] 잘못된 패킷 : {json}");
+                Console.WriteLine(ex.StackTrace);
+            }
+
             if (packet == null) return;
 
             int type = (int)packet.Type;

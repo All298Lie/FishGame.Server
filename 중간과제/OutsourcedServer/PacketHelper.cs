@@ -44,32 +44,40 @@ namespace BattleArena
         // ═══════════════════════════════════════
         public static async Task<string?> ReceiveAsync(Socket socket)
         {
+            byte[] header = new byte[4];
+
             try
             {
-                byte[] header = new byte[4];
+                if (await ReadExactAsync(socket, header, 4) == false) return null;
 
-                // 먼저 헤더 4바이트를 읽어 본문 길이를 알아냅니다.
-                // Receive는 블로킹 함수라서 Task.Run으로 감싸 비동기화했습니다.
-                int n = await socket.ReceiveAsync(new ArraySegment<byte>(header, 0, 4), SocketFlags.None);
+                int n = BitConverter.ToInt32(header, 0);
+                if (n <= 0 || n > MAX_BODY) return null;
 
-                if (n == 0) return null;          // 상대가 연결을 닫음
+                byte[] body = new byte[n];
+                if (await ReadExactAsync(socket, body, n) == false) return null;
 
-                int bodyLength = BitConverter.ToInt32(header, 0);
+                string json = Encoding.UTF8.GetString(body, 0, n);
 
-                // 말도 안 되는 길이가 오면 끊습니다 (악성 패킷 방어)
-                if (bodyLength <= 0 || bodyLength > MAX_BODY) return null;
-
-                byte[] body = new byte[bodyLength];
-
-                // 알아낸 길이만큼 본문을 읽습니다.
-                await socket.ReceiveAsync(new ArraySegment<byte>(body, 0, bodyLength), SocketFlags.None);
-
-                return Encoding.UTF8.GetString(body, 0, bodyLength);
+                return json;
             }
             catch (SocketException) // 클라이언트와의 연결이 끊어질 경우 예외처리
             {
                 return null;
             }
+        }
+
+        private static async Task<bool> ReadExactAsync(Socket socket, byte[] buffer, int size)
+        {
+            int read = 0;
+            while (read < size)
+            {
+                int n = await socket.ReceiveAsync(
+                    new ArraySegment<byte>(buffer, read, size - read), SocketFlags.None);
+
+                if (n == 0) return false;
+                read += n;
+            }
+            return true;
         }
     }
 }
