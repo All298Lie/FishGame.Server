@@ -23,8 +23,6 @@ namespace BattleArena
 
         private Socket _socket = null!;
 
-        private readonly StringBuilder _stateBuilder = new StringBuilder(2048);
-
         private int _appliedCount;
         private int _droppedCount;
 
@@ -151,16 +149,16 @@ namespace BattleArena
                 var sessions = GameServer.Instance.GetSessions();
                 if (sessions.Count == 0) continue;
 
-                _stateBuilder.Clear();
-                _stateBuilder.Append(UdpPacket.STATE);
+                StringBuilder stateBuilder = new StringBuilder(2048);
+                stateBuilder.Append(UdpPacket.STATE);
 
                 foreach (var s in sessions)
                 {
                     if (s.UdpEndPoint == null) continue;
-                    _stateBuilder.Append($"|{s.PlayerId},{s.Nickname},{s.X},{s.Y}");
+                    stateBuilder.Append($"|{s.PlayerId},{s.Nickname},{s.X},{s.Y}");
                 }
 
-                string state = _stateBuilder.ToString();
+                string state = stateBuilder.ToString();
                 if (state == UdpPacket.STATE) continue;
 
                 byte[] data = Encoding.UTF8.GetBytes(state);
