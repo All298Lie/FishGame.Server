@@ -136,8 +136,9 @@ namespace BattleArena
             {
                 await PacketHelper.SendAsync(_socket, packet);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[전송 에러] ID:{PlayerId} - {ex.Message}");
                 Disconnect();
             }
         }
