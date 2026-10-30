@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BattleArenaServer
@@ -253,6 +254,31 @@ namespace BattleArenaServer
                 //    그건 TODO 5 의 걸음 쿨타임이 막습니다.
                 // ═══════════════════════════════════════════════
 
+                // 가. EP 유효성 검사
+                if (s.UdpEndPoint == null)
+                {
+                    s.UdpEndPoint = cmd.From;
+                }
+                else if (s.UdpEndPoint != cmd.From)
+                {
+                    _rejectCount++;
+                    continue;
+                }
+
+                // 나. Seq 유효성 검사
+                if (cmd.Seq <= s.LastSeq)
+                {
+                    _rejectCount++;
+                    continue;
+                }
+                s.LastSeq = cmd.Seq;
+
+                // 다. 이동 유효성 검사
+                if (Math.Abs(cmd.Dx) > 1 || Math.Abs(cmd.Dy) > 1)
+                {
+                    _rejectCount++;
+                    continue;
+                }
 
                 // ═══════════════════════════════════════════════
                 //  TODO 4 — 검사를 통과한 입력을 이 사람의 줄에 세우세요   ★★
