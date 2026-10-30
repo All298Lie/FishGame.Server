@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -441,6 +442,21 @@ namespace BattleArenaServer
             //      주장할 수 있습니다.
             // ═══════════════════════════════════════════════
 
+            // 1. 맵에 있는 아이템 수 확인
+            if (ItemCount >= MAX_ITEMS) return;
+
+            // 2. 새 번호 발급
+            int id = ++_nextItemId;
+
+            // 3. 아이템 추가
+            Item item = new Item()
+            {
+                Id = id,
+                X = _rng.Next(0, MAP_W),
+                Y = _rng.Next(0, MAP_H)
+            };
+
+            _items[id] = item;
         }
 
         private async Task CheckPickupsAsync(List<ClientSession> sessions)
