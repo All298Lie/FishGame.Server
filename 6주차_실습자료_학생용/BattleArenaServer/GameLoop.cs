@@ -312,6 +312,22 @@ namespace BattleArenaServer
                 //    조금 쌓아둬야 울렁임을 흡수해서 안 끊깁니다.
                 // ═══════════════════════════════════════════════
 
+                // 1. 플레이어 큐 가져오기
+                if (_pending.TryGetValue(cmd.PlayerId, out var task) == false)
+                {
+                    task = new Queue<InputCommand>();
+                    _pending.Add(cmd.PlayerId, task);
+                }
+
+                // 2. 큐 안에 작업이 최대치에 초과하여 쌓여있을 경우 드랍
+                if (task.Count >= MAX_PENDING)
+                {
+                    task.Dequeue();
+                    _dropCount++;
+                }
+
+                // 3. 방금 온 입력을 큐에 추가
+                task.Enqueue(cmd);
             }
         }
 
