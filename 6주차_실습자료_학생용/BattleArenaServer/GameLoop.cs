@@ -384,6 +384,24 @@ namespace BattleArenaServer
                 //  같은 구조가 들어 있습니다.
                 // ═══════════════════════════════════════════════
 
+                // 1. 아직 걷는 턴이 아닐 경우, 패스
+                if (_tick < s.NextStepTick) continue;
+
+                // 2. 큐를 가져오는데 없거나 비어있을 경우, 패스
+                if (_pending.TryGetValue(s.PlayerId, out var task) == false || task.Count == 0) continue;
+
+                // 3. 큐에서 하나 가져오기
+                var input = task.Dequeue();
+
+                // 4. 다음 걸음 틱 계산
+                s.NextStepTick = _tick + STEP_TICKS;
+
+                // 5. 좌표계산
+                s.X = Math.Clamp(s.X + input.Dx, 0, MAP_W - 1);
+                s.Y = Math.Clamp(s.Y + input.Dy, 0, MAP_H - 1);
+
+                // 6. 반영된 Seq 작성
+                s.AckSeq = input.Seq;
             }
 
             // 나간 사람의 줄 치우기
