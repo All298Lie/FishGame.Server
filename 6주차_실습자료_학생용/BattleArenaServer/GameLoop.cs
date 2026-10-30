@@ -261,7 +261,6 @@ namespace BattleArenaServer
                 else if (Equals(s.UdpEndPoint, cmd.From) == false)
                 {
                     _rejectCount++;
-                    Console.WriteLine("EP");
                     continue;
                 }
 
@@ -269,7 +268,6 @@ namespace BattleArenaServer
                 if (cmd.Seq <= s.LastSeq)
                 {
                     _rejectCount++;
-                    Console.WriteLine("Seq");
                     continue;
                 }
                 s.LastSeq = cmd.Seq;
@@ -278,7 +276,6 @@ namespace BattleArenaServer
                 if (Math.Abs(cmd.Dx) > 1 || Math.Abs(cmd.Dy) > 1)
                 {
                     _rejectCount++;
-                    Console.WriteLine("Move");
                     continue;
                 }
 
