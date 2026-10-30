@@ -491,6 +491,25 @@ namespace BattleArenaServer
             //      아래 코드가 "먼저 찾은 사람이 가져간다" 로 해결합니다.
             // ═══════════════════════════════════════════════
 
+            foreach (var session in sessions)
+            {
+                // 가. EP가 정의되지 않은 플레이어인 경우, 패스
+                if (session.UdpEndPoint == null) continue;
+
+                int x = session.X;
+                int y = session.Y;
+
+                foreach (var item in _items.Values)
+                {
+                    // 나. 아이템과 플레이어의 거리 계산
+                    if (Math.Abs(item.X - x) > PICK_RANGE || Math.Abs(item.Y - y) > PICK_RANGE) continue;
+
+                    taken.Add((session, item));
+
+                    // 다. 한 틱에는 1개의 아이템만 주울 수 있음
+                    break;
+                }
+            }
 
             // ★ 먼저 찾은 사람이 가져갑니다.
             //   틱 루프가 혼자 돌기 때문에 순서가 확정됩니다.
