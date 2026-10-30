@@ -191,6 +191,15 @@ namespace BattleArenaServer
                 //
                 //    예제 F(TickLoop) 의 루프와 같은 구조입니다.
                 // ═══════════════════════════════════════════════
+
+                IntakeInputs();
+
+                StepPlayers(sessions);
+
+                if (_tick % SPAWN_TICKS == 0) SpawnItem();
+
+                await CheckPickupsAsync(sessions);
+                await BroadcastAsync(sessions);
             }
         }
 
