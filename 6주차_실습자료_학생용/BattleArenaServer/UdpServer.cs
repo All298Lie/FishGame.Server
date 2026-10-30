@@ -139,7 +139,7 @@ namespace BattleArenaServer
             //    나중에 "정말 그 사람이 보냈나" 를 확인할 수 없습니다.
             // ═══════════════════════════════════════════════
 
-            InputCommand iCmd = new InputCommand
+            InputCommand input = new InputCommand
             {
                 PlayerId = playerId,
                 Seq = seq,
@@ -148,7 +148,7 @@ namespace BattleArenaServer
                 From = from
             };
 
-            Inputs.Enqueue(iCmd);
+            Inputs.Enqueue(input);
         }
 
         // ═══════════════════════════════════════
