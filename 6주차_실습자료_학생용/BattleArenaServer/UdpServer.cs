@@ -138,6 +138,17 @@ namespace BattleArenaServer
             //    From 을 빠뜨리기 쉽습니다. 이게 없으면
             //    나중에 "정말 그 사람이 보냈나" 를 확인할 수 없습니다.
             // ═══════════════════════════════════════════════
+
+            InputCommand iCmd = new InputCommand
+            {
+                PlayerId = playerId,
+                Seq = seq,
+                Dx = dx,
+                Dy = dy,
+                From = from
+            };
+
+            Inputs.Enqueue(iCmd);
         }
 
         // ═══════════════════════════════════════
