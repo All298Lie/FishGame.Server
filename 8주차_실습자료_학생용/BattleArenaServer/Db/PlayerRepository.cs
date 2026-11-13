@@ -142,8 +142,25 @@ namespace BattleArenaServer
             // ═══════════════════════════════════════
             // ── 여기에 작성 ──
 
+            // 1. DB 연결 및 SQL문 담기
+            await using var conn = await Db.OpenAsync();
 
-            throw new NotImplementedException("TODO 3 — 새 플레이어 INSERT");
+            const string sql = """
+                INSERT INTO `players` (`nickname`) VALUES (@nick)
+            """;
+            await using var cmd = new MySqlCommand(sql, conn);
+
+            cmd.Parameters.AddWithValue("@nick", nickname);
+
+            // 2. SQL문 실행
+            await cmd.ExecuteNonQueryAsync();
+
+            // 3, 4. 값을 담아 리턴
+            return new PlayerRecord()
+            {
+                Id = (int)cmd.LastInsertedId,
+                Nickname = nickname
+            };
         }
 
         // ═══════════════════════════════════════
