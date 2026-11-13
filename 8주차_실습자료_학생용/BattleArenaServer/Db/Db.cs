@@ -110,8 +110,20 @@ namespace BattleArenaServer
                 // ═══════════════════════════════════════
                 // ── 여기에 작성 ──
 
-                Console.WriteLine($"[DB]");
-                IsAvailable = false;
+                // 1. DB 연결
+                await using var conn = await OpenAsync();
+
+                // 2. SQL문 실행
+                await using var cmd = new MySqlCommand("SELECT VERSION()", conn);
+
+                // 3. 데이터 반환
+                object? version = await cmd.ExecuteScalarAsync();
+
+                // 4. 메세지 출력
+                Console.WriteLine($"[DB] 연결 성공 - MYSQL {version}");
+
+                // 5. DB 사용을 위한 프로퍼티 값 변경
+                IsAvailable = true;
             }
             catch (MySqlException ex)
             {
