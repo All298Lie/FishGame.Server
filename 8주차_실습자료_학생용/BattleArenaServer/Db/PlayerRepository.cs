@@ -61,8 +61,27 @@ namespace BattleArenaServer
             // ═══════════════════════════════════════
             // ── 여기에 작성 ──
 
+            // 1. 닉네임이 존재하는지 찾기
+            PlayerRecord? record = await FindByNicknameAsync(nickname);
 
-            throw new NotImplementedException("TODO 4 — 로그인 흐름");
+            // 2. 존재하지 않을 경우 생성
+            if (record == null)
+            {
+                try
+                {
+                    record = await CreateAsync(nickname);
+                }
+                catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+                {
+                    return null!; // ClientSession 등의 로직을 바꿔서 다시 로그인하도록 변경
+                }
+            }
+
+            // 3. 접속 시각 기록
+            await TouchLoginAsync(record!.Id);
+
+            // 4. 찾은/만든 PlayerRecord 반환
+            return record!;
         }
 
         // ═══════════════════════════════════════
