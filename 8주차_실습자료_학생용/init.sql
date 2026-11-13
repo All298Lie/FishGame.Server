@@ -1,14 +1,17 @@
-CREATE DATABASE IF NOT EXISTS battlearea_game;
-USE battlearea_game;
+-- 데이터베이스 확인 및 생성
+CREATE DATABASE IF NOT EXISTS battlearena_game;
+
+-- 데이터베이스 사용, 테이블 확인 및 생성
+USE battlearena_game;
 
 CREATE TABLE IF NOT EXISTS players (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     nickname VARCHAR(20) NOT NULL UNIQUE,
     best_score INT UNSIGNED NOT NULL DEFAULT 0,
     total_score BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    game_played INT UNSIGNED NOT NULL DEFAULT 0,
+    games_played INT UNSIGNED NOT NULL DEFAULT 0,
     create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_login_at DATETIME NOT NULL,
+    last_login_at DATETIME NULL,
 
     PRIMARY KEY (`id`)
 );
@@ -34,4 +37,6 @@ CREATE TABLE IF NOT EXISTS match_results (
     FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
 );
 
-SHOW DATABASES;
+-- 데이터베이스 유저 계정 확인 및 생성, 권한 부여
+CREATE USER IF NOT EXISTS 'ba_server'@'localhost' IDENTIFIED BY 'ba-server-2026';
+GRANT SELECT, INSERT, UPDATE ON battlearena_game.* TO 'ba_server'@'localhost';
