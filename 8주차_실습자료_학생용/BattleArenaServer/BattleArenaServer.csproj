@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BattleArenaServer</RootNamespace>
+    <AssemblyName>BattleArenaServer</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <!-- 8주차 추가 : MySQL 접속 라이브러리 -->
+    <PackageReference Include="MySqlConnector" Version="2.4.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 8주차 : 연결 문자열 파일을 실행 폴더로 복사 (GitHub 에는 올리지 않음) -->
+    <None Update="dbsettings.json" Condition="Exists('dbsettings.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
