@@ -89,7 +89,34 @@ namespace BattleArenaServer
             // ═══════════════════════════════════════
             // ── 여기에 작성 ──
 
-            return null;
+            // 1. 연결 열기
+            await using var conn = await Db.OpenAsync();
+
+            // 2. SQL 담기
+            const string sql = """
+                SELECT `id`, `nickname`, `best_score`, `games_played`
+                FROM `players` WHERE `nickname` = @nick
+            """;
+            await using var cmd = new MySqlCommand(sql, conn);
+
+            // 3. 빈칸 채우기
+            cmd.Parameters.AddWithValue("@nick", nickname);
+
+            // 4. SQL문 실행 후 반환 받기
+            var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync() == false) return null;
+
+            // 5. 받은 값을 담아 리턴
+            PlayerRecord record = new PlayerRecord()
+            {
+                Id = reader.GetInt32(0),
+                Nickname = reader.GetString(1),
+                BestScore = reader.GetInt32(2),
+                GamesPlayed = reader.GetInt32(3)
+            };
+
+            return record;
         }
 
         // ═══════════════════════════════════════
