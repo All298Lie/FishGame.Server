@@ -66,12 +66,28 @@ namespace BattleArenaServer
                 //                        그래서 IsConnected 로 붙었는지 확인합니다.
                 // ═══════════════════════════════════════
 
-                _mux = await ConnectionMultiplexer.ConnectAsync(config);
-                TimeSpan t = await _mux.GetDatabase().PingAsync();
+                _mux = await ConnectionMultiplexer.ConnectAsync($"{config},connectTimeout=3000,abortConnect=false");
 
-                Console.WriteLine($"[Redis] 연결 성공 - PING {t.Milliseconds}ms");
+                if (_mux.IsConnected == false)
+                {
+                    Console.WriteLine($"[Redis] 연결 실패 — {config}에 redis가 켜져 있는지 확인하세요");
 
-                return _mux.IsConnected;
+                    HookEvents(_mux);
+
+                    return false;
+                }
+                else
+                {
+                    TimeSpan t = await _mux.GetDatabase().PingAsync();
+
+                    Console.WriteLine($"[Redis] 연결 성공 - PING {t.Milliseconds}ms");
+
+                    HookEvents(_mux);
+
+                    return true;
+                }
+
+                    
             }
             catch (NotImplementedException)
             {

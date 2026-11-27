@@ -45,7 +45,7 @@ namespace BattleArenaServer
         /// [9주차] dbsettings.json 의 Redis 주소
         ///   "127.0.0.1:6379"  — 주소:포트 (Redis 기본 포트 6379)
         /// </summary>
-        public static string RedisConfig { get; private set; } = "127.0.0.1:6379,connectTimeout=3000,abortConnect=false";
+        public static string RedisConfig { get; private set; } = "127.0.0.1:6379";
 
         private class Settings
         {
