@@ -106,8 +106,23 @@ namespace BattleArenaServer
             //     Score    = (int)e.Score
             //     Rank     = i + 1        ← 배열 순서가 곧 순위
             // ═══════════════════════════════════════
-            await Task.CompletedTask;
-            throw new NotImplementedException("TODO 3");
+
+            SortedSetEntry[] entries = await RedisCache.Db0.SortedSetRangeByRankWithScoresAsync(KEY, 0, n - 1, Order.Descending);
+
+            if (entries == null || entries.Length < 1) return new List<Entry>();
+
+            List<Entry> entryList = new List<Entry>();
+            for (int index = 0; index < n; index++)
+            {
+                Entry newEntry = new Entry();
+                newEntry.Nickname = entries[index].Element.ToString();
+                newEntry.Score = (int)entries[index].Score;
+                newEntry.Rank = index + 1;
+
+                entryList.Add(newEntry);
+            }
+
+            return entryList;
         }
 
         /// <summary>
