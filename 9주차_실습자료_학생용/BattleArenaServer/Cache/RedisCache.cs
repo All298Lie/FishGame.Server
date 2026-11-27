@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
@@ -65,8 +65,13 @@ namespace BattleArenaServer
                 //                        뒤에서 계속 다시 붙으려고 합니다.
                 //                        그래서 IsConnected 로 붙었는지 확인합니다.
                 // ═══════════════════════════════════════
-                await Task.CompletedTask;
-                throw new NotImplementedException("TODO 1");
+
+                _mux = await ConnectionMultiplexer.ConnectAsync(config);
+                TimeSpan t = await _mux.GetDatabase().PingAsync();
+
+                Console.WriteLine($"[Redis] 연결 성공 - PING {t.Milliseconds}ms");
+
+                return _mux.IsConnected;
             }
             catch (NotImplementedException)
             {
