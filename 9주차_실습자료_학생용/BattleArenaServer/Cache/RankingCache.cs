@@ -175,15 +175,24 @@ namespace BattleArenaServer
             
             await RedisCache.Db0.KeyDeleteAsync(KEY);
 
-            List<SortedSetEntry> entries = new List<SortedSetEntry>();
+            List<SortedSetEntry> entries = new List<SortedSetEntry>(1000);
             foreach (var row in rows)
             {
                 entries.Add(new SortedSetEntry(row.Nickname, row.BestScore));
+
+                if (entries.Count >= 1000)
+                {
+                    await RedisCache.Db0.SortedSetAddAsync(KEY, entries.ToArray());
+                    entries.Clear();
+                }
             }
 
-            long r = await RedisCache.Db0.SortedSetAddAsync(KEY, entries.ToArray());
+            if (entries.Count > 0)
+            {
+                await RedisCache.Db0.SortedSetAddAsync(KEY, entries.ToArray());
+            }
 
-            return (int)r;
+            return rows.Count;
         }
 
         /// <summary>
