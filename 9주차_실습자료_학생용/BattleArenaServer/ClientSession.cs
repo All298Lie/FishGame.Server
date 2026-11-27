@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -284,8 +284,9 @@ namespace BattleArenaServer
                 //   int? rank = await RankingCache.RankOfAsync(nickname);
                 //   rank 가 있으면 " · 전체 N위", 없으면 ""
                 // ═══════════════════════════════════════
-                await Task.CompletedTask;
-                throw new NotImplementedException("TODO 7");
+                
+                int? rank = await RankingCache.RankOfAsync(nickname);
+                return rank == null ? "" : $"전체 {rank}위";
             }
             catch (Exception)
             {
