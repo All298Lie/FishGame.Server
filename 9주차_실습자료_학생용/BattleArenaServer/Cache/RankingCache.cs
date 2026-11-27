@@ -114,12 +114,12 @@ namespace BattleArenaServer
             List<Entry> entryList = new List<Entry>();
             for (int index = 0; index < n; index++)
             {
-                Entry newEntry = new Entry();
-                newEntry.Nickname = entries[index].Element.ToString();
-                newEntry.Score = (int)entries[index].Score;
-                newEntry.Rank = index + 1;
-
-                entryList.Add(newEntry);
+                entryList.Add(new Entry()
+                {
+                    Nickname = entries[index].Element.ToString(),
+                    Score = (int)entries[index].Score,
+                    Rank = index + 1
+                });
             }
 
             return entryList;
