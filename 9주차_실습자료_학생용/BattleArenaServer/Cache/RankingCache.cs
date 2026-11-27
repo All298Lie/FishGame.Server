@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -78,8 +78,17 @@ namespace BattleArenaServer
             //
             //   now == null : 랭킹에 처음 들어오는 사람 → 점수가 0 이어도 넣습니다
             // ═══════════════════════════════════════
-            await Task.CompletedTask;
-            throw new NotImplementedException("TODO 2");
+
+            double? now = await RedisCache.Db0.SortedSetScoreAsync(KEY, nickname);
+
+            if (now == null || score > now.Value)
+            {
+                await RedisCache.Db0.SortedSetAddAsync(KEY, nickname, score);
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>TOP N — 점수 높은 순</summary>
