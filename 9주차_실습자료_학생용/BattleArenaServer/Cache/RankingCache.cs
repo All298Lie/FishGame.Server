@@ -141,8 +141,11 @@ namespace BattleArenaServer
             //
             //   r 이 null 이면 null, 아니면 (int)r + 1
             // ═══════════════════════════════════════
-            await Task.CompletedTask;
-            throw new NotImplementedException("TODO 4");
+
+            long? r = await RedisCache.Db0.SortedSetRankAsync(KEY, nickname, Order.Descending);
+
+            if (r == null) return null;
+            else return (int)r + 1;
         }
 
         /// <summary>랭킹에 몇 명 있나</summary>
