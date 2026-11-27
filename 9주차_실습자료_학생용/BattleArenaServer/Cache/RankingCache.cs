@@ -172,7 +172,18 @@ namespace BattleArenaServer
             //   ★ 한 명씩 10만 번 보내면 왕복이 10만 번입니다.
             //     묶어서 보내면 ZADD 한 번에 1000명 — 왕복이 100번으로 줄어듭니다.
             // ═══════════════════════════════════════
-            throw new NotImplementedException("TODO 5");
+            
+            await RedisCache.Db0.KeyDeleteAsync(KEY);
+
+            List<SortedSetEntry> entries = new List<SortedSetEntry>();
+            foreach (var row in rows)
+            {
+                entries.Add(new SortedSetEntry(row.Nickname, row.BestScore));
+            }
+
+            long r = await RedisCache.Db0.SortedSetAddAsync(KEY, entries.ToArray());
+
+            return (int)r;
         }
 
         /// <summary>
