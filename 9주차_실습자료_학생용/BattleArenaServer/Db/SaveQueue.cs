@@ -1,4 +1,7 @@
-using System;
+﻿using System;
+using System.Net.Sockets;
+using System.Reflection.Metadata;
+using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -156,8 +159,35 @@ namespace BattleArenaServer
                 //          ChatEchoPacket { Nickname = "랭킹", Message = "전체 3위 (최고 40점 · 새 기록!)" }
                 //   마지막에 서버 로그 : "[랭킹] 3판 반영 — 홍길동 2위 · 김철수 5위"
                 // ═══════════════════════════════════════
-                await Task.CompletedTask;
-                throw new NotImplementedException("TODO 6");
+                
+                StringBuilder logs = new StringBuilder();
+
+                foreach (var entry in m.Entries)
+                {
+                    if (entry.PlayerId == 0) continue;
+
+                    bool newBest = await RankingCache.UpdateBestAsync(entry.Nickname, entry.Score);
+                    int? rank = await RankingCache.RankOfAsync(entry.Nickname);
+                    double? best = await RedisCache.Db0.SortedSetScoreAsync(RankingCache.KEY, entry.Nickname);
+
+                    ClientSession? session = GameServer.Instance.FindSessionByDbId(entry.PlayerId);
+                    if (session != null)
+                    {
+                        StringBuilder message = new StringBuilder($"전체 {rank}위 (최고 {best}점");
+                        if (newBest == true) message.Append(" · 새 기록!");
+                        message.Append(')');
+
+                        _ = session.SendAsync(new ChatEchoPacket()
+                        {
+                            Nickname = "랭킹",
+                            Message = message.ToString()
+                        });
+                    }
+                    if (logs.Length > 0) logs.Append(" · ");
+                    logs.Append($"{entry.Nickname} {rank}위");
+                }
+
+                Console.WriteLine($"[랭킹] {m.RoundNo}판 반영 - {logs}");
             }
             catch (NotImplementedException ex)
             {
