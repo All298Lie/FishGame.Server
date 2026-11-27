@@ -74,6 +74,40 @@ namespace BattleArenaServer
             // ═══════════════════════════════════════
             // ── 여기에 작성 ──
 
+            await using var conn = await Db.OpenAsync();
+
+            await using var tx = await conn.BeginTransactionAsync();
+
+            // 1. INSERT
+            const string insertSql = """
+                INSERT INTO matches (started_at, ended_at) VALUES (@start, @end)
+            """;
+            await using var cmd = new MySqlCommand(insertSql, conn);
+            cmd.Parameters.AddWithValue("@start", match.StartedAt);
+            cmd.Parameters.AddWithValue("@end", match.EndedAt);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            long matchId = cmd.LastInsertedId;
+
+            // 2. INSERT INTO
+            const string insertIntoSql = """
+                INSERT INTO match_results (match_id, player_id, score, ranking, coins, gems)
+                VALUES (@m, @p, @s, @r, @c, @g)
+            """;
+            foreach (var e in match.Entries)
+            {
+                await using var insertIntoCmd = new MySqlCommand(insertSql, conn);
+                insertIntoCmd.Parameters.AddWithValue("@m", matchId);
+                insertIntoCmd.Parameters.AddWithValue("@p", e.PlayerId);
+                insertIntoCmd.Parameters.AddWithValue("@s", e.Score);
+                insertIntoCmd.Parameters.AddWithValue("@r", e.Ranking);
+                insertIntoCmd.Parameters.AddWithValue("@c", e.Coins);
+                insertIntoCmd.Parameters.AddWithValue("@g", e.Gems);
+
+                await insertIntoCmd.ExecuteNonQueryAsync();
+            }
+            // 3. UPDATE
 
             await Task.CompletedTask;
             throw new NotImplementedException("TODO 5 — 트랜잭션으로 판 저장");

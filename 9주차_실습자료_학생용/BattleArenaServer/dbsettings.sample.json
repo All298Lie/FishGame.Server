@@ -1,0 +1,4 @@
+{
+  "ConnectionString": "Server=127.0.0.1;Port=3306;Database=battlearena_game;User ID=ba_server;Password=여기에_비밀번호;Connection Timeout=3;",
+  "Redis": "127.0.0.1:6379"
+}
